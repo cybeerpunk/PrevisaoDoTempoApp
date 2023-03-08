@@ -1,8 +1,11 @@
 package com.example.previsaodotempoapp
 
+import android.content.pm.PackageManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.previsaodotempoapp.api.ListPrevisaoRepository
 import com.example.previsaodotempoapp.databinding.ActivityMainBinding
@@ -19,9 +22,27 @@ class MainActivity : AppCompatActivity() {
         mBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
 
-        getListPrevisao()
+
+        haveLocation()
 
     }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if(requestCode == 1 && grantResults.isNotEmpty()){
+            for (i in grantResults){
+                if(grantResults[i] == PackageManager.PERMISSION_GRANTED){
+                    getListPrevisao()
+                }
+            }
+        }
+    }
+
+
 
     fun setupAdapter() {
         val lAdapter = ListPrevisaoAdapter(this, mListTimeDTO)
@@ -43,4 +64,21 @@ class MainActivity : AppCompatActivity() {
 
 
     }
+
+    fun haveLocation() {
+        val lPermission = mutableListOf<String>()
+
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            lPermission.add(android.Manifest.permission.ACCESS_FINE_LOCATION)
+            ActivityCompat.requestPermissions(this, lPermission.toTypedArray(), 1)
+
+        }
+
+    }
+
+
 }

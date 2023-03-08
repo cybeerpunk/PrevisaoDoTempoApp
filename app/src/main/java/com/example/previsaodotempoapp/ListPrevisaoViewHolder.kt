@@ -11,7 +11,7 @@ class ListPrevisaoViewHolder(
 ) : RecyclerView.ViewHolder(mBinding.root) {
 
     fun fill(aListDetalhesDTO: String) {
-        mBinding.textViewTime.setText(aListDetalhesDTO.toString())
+        mBinding.textViewTime.setText(aListDetalhesDTO)
        // mBinding.textViewTemperatura.setText(aListDetalhesDTO.temperature_2m.toString())
        // mBinding.textViewPrecipitacao.setText(aListDetalhesDTO.precipitation.toString())
 

@@ -5,14 +5,14 @@ import com.example.previsaodotempoapp.exception.PrevisaoException
 
 class ListPrevisaoRepository {
 
-    fun getValuePrevisao(): ListDetalhesDTO {
+   /* fun getValuePrevisao(): ListDetalhesDTO {
         val response = PrevisaoREST()
             .getValuePrevisao()
             .execute()
         if (response.code() != 200 && response.code() != 201)
             throw PrevisaoException.fromHTTPErrorBody(response.errorBody())
         return  response.body()!!
-    }
+    }*/
 
     fun getValueWithLocation(aLatitude: String, aLongitude: String): ListDetalhesDTO {
         val response = PrevisaoREST()

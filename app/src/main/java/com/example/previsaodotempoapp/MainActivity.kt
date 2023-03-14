@@ -2,6 +2,7 @@ package com.example.previsaodotempoapp
 
 import android.content.Context
 import android.content.pm.PackageManager
+import android.location.Location
 import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -14,6 +15,7 @@ import com.example.previsaodotempoapp.databinding.ActivityMainBinding
 import com.example.previsaodotempoapp.dto.ListDetalhesDTO
 import com.example.previsaodotempoapp.dto.TimeDTO
 import com.example.previsaodotempoapp.framework.ScreenSlidePagerAdapter
+import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -103,17 +105,27 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(this, lPermission.toTypedArray(), 1)
 
         } else {
-            val lLocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            val lLocation =
-                lLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            val lClient = LocationServices.getFusedLocationProviderClient(this)
+            lClient.lastLocation.addOnSuccessListener { location: Location? ->
+                mLatitude = location?.latitude.toString()
+                mLongitude = location?.longitude.toString()
 
-            if (lLocation != null) {
-                mLatitude = lLocation.latitude.toString()
-                mLongitude = lLocation.longitude.toString()
+                Toast.makeText(this, "$mLatitude $mLongitude", Toast.LENGTH_SHORT).show()
                 getListPrevisao()
 
             }
         }
+//            val lLocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+//            val lLocation =
+//                lLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+//
+//            if (lLocation != null) {
+//                mLatitude = lLocation.latitude.toString()
+//                mLongitude = lLocation.longitude.toString()
+//                getListPrevisao()
+//
+//            }
+//        }
 
     }
 

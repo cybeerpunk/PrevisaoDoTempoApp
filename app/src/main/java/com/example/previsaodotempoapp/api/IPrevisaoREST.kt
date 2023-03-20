@@ -1,6 +1,7 @@
 package com.example.previsaodotempoapp.api
 
 import com.example.previsaodotempoapp.dto.ListDetalhesDTO
+import com.example.previsaodotempoapp.dto.ObjeticLocationDTO
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Query
@@ -16,4 +17,11 @@ interface IPrevisaoREST {
         @Query("latitude") latitude: String,
         @Query("longitude") longitude: String
     ): Call<ListDetalhesDTO>
+
+    @GET("https://nominatim.openstreetmap.org/reverse")
+    fun getNameOfLocation(
+        @Query("lat") lat: String,
+        @Query("lon") lon: String,
+        @Query("format") format: String
+    ): Call<ObjeticLocationDTO>
 }

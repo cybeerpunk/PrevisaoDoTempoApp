@@ -1,20 +1,16 @@
 package com.example.previsaodotempoapp
 
-import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
-import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.previsaodotempoapp.api.ListPrevisaoRepository
 import com.example.previsaodotempoapp.databinding.ActivityMainBinding
-import com.example.previsaodotempoapp.dto.ListDetalhesDTO
-import com.example.previsaodotempoapp.dto.TimeDTO
-import com.example.previsaodotempoapp.framework.ScreenSlidePagerAdapter
+import com.example.previsaodotempoapp.dto.StoreClimaDTO
+import com.example.previsaodotempoapp.store.AddressPreference
 import com.google.android.gms.location.LocationServices
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -29,11 +25,18 @@ class MainActivity : AppCompatActivity() {
     lateinit var mListPrecipitation: List<Double>
     lateinit var mLatitude: String
     lateinit var mLongitude: String
+    val mStoreClima = StoreClimaDTO()
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         mBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
+
+        AddressPreference(this).get()
+        if(!mStoreClima.listDetalhesDTO.equals(null)){
+            setInformationCache()
+        }
 
 
         haveLocation()
@@ -68,7 +71,13 @@ class MainActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 /*val lRepository = ListPrevisaoRepository().getValuePrevisao()*/
-                val lRepository = ListPrevisaoRepository().getValueWithLocation(mLatitude, mLongitude)
+                val lRepository = ListPrevisaoRepository(this@MainActivity).getValueWithLocation(mLatitude, mLongitude)
+                val lAddres = ListPrevisaoRepository(this@MainActivity).getNameOfLocation(mLatitude,mLongitude)
+                mStoreClima.listDetalhesDTO = lRepository
+                mStoreClima.objeticLocationDTO = lAddres
+
+
+                ListPrevisaoRepository(this@MainActivity).storeClima(mStoreClima)
                 withContext(Dispatchers.Main) {
                     mListTemperature = lRepository.hourly.temperature_2m
                     mListPrecipitation = lRepository.hourly.precipitation
@@ -77,7 +86,7 @@ class MainActivity : AppCompatActivity() {
                         setupAdapter()
                     else
                         throw Exception("Não foi possível concluir a requisição")
-                    mBinding.textViewNomeDoLocal.text = mLatitude + "  " + mLongitude
+                    mBinding.textViewNomeDoLocal.text = lAddres.address.city + " " + lAddres.address.state + " " + lAddres.address.country
                 }
 
             } catch (e: Exception) {
@@ -115,6 +124,8 @@ class MainActivity : AppCompatActivity() {
 
             }
         }
+
+
 //            val lLocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 //            val lLocation =
 //                lLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
@@ -128,6 +139,15 @@ class MainActivity : AppCompatActivity() {
 //        }
 
     }
+
+     fun setInformationCache(){
+         mBinding.textViewNomeDoLocal.text = mStoreClima.objeticLocationDTO.address.city + " " + mStoreClima.objeticLocationDTO.address.state + " " + mStoreClima.objeticLocationDTO.address.country
+         mListTemperature = mStoreClima.listDetalhesDTO.hourly.temperature_2m
+         mListPrecipitation = mStoreClima.listDetalhesDTO.hourly.precipitation
+         mListTimeDTO = mStoreClima.listDetalhesDTO.hourly.time
+
+         setupAdapter()
+     }
 
 
 }

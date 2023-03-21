@@ -9,6 +9,7 @@ import androidx.core.app.ActivityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.previsaodotempoapp.api.ListPrevisaoRepository
 import com.example.previsaodotempoapp.databinding.ActivityMainBinding
+import com.example.previsaodotempoapp.dto.ListDetalhesDTO
 import com.example.previsaodotempoapp.dto.StoreClimaDTO
 import com.example.previsaodotempoapp.store.AddressPreference
 import com.google.android.gms.location.LocationServices
@@ -25,7 +26,8 @@ class MainActivity : AppCompatActivity() {
     lateinit var mListPrecipitation: List<Double>
     lateinit var mLatitude: String
     lateinit var mLongitude: String
-    val mStoreClima = StoreClimaDTO()
+    var mStoreClima = StoreClimaDTO()
+    lateinit var mAdapter: ListPrevisaoAdapter
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,16 +35,20 @@ class MainActivity : AppCompatActivity() {
         mBinding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(mBinding.root)
 
-        AddressPreference(this).get()
-        if(!mStoreClima.listDetalhesDTO.equals(null)){
+        mStoreClima = AddressPreference(this).get()
+
+        clickTextRefresh()
+
+        if(mStoreClima.listDetalhesDTO.latitude != null && mStoreClima.objeticLocationDTO.address.city!= "") {
             setInformationCache()
+        } else {
+            haveLocation()
         }
 
 
-        haveLocation()
 
     }
-
+       //Função utilizada para pegar o resultado da pergunta de permissão do usuário
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -60,24 +66,28 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
+     //Utilizado para setar as informações do RecyclerView
     fun setupAdapter() {
-        val lAdapter = ListPrevisaoAdapter(this, mListTimeDTO, mListTemperature, mListPrecipitation)
-        mBinding.recyclerViewHours.adapter = lAdapter
+        mAdapter = ListPrevisaoAdapter(this, mListTimeDTO, mListTemperature, mListPrecipitation)
+        mBinding.recyclerViewHours.adapter = mAdapter
         mBinding.recyclerViewHours.layoutManager = LinearLayoutManager(this)
+
+        mAdapter.notifyDataSetChanged() // utilizado para recarregar a informações do Recycler
     }
 
+    // Utilizada para fazer as requisições de lat e long, endereço do usuario, limpar cache e guardar um novo, setar as novas informações das variaveis.
     fun getListPrevisao() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 /*val lRepository = ListPrevisaoRepository().getValuePrevisao()*/
                 val lRepository = ListPrevisaoRepository(this@MainActivity).getValueWithLocation(mLatitude, mLongitude)
-                val lAddres = ListPrevisaoRepository(this@MainActivity).getNameOfLocation(mLatitude,mLongitude)
+                val lAddress = ListPrevisaoRepository(this@MainActivity).getNameOfLocation(mLatitude,mLongitude)
                 mStoreClima.listDetalhesDTO = lRepository
-                mStoreClima.objeticLocationDTO = lAddres
+                mStoreClima.objeticLocationDTO = lAddress
 
-
+                ListPrevisaoRepository(this@MainActivity).clearData()
                 ListPrevisaoRepository(this@MainActivity).storeClima(mStoreClima)
+
                 withContext(Dispatchers.Main) {
                     mListTemperature = lRepository.hourly.temperature_2m
                     mListPrecipitation = lRepository.hourly.precipitation
@@ -86,7 +96,7 @@ class MainActivity : AppCompatActivity() {
                         setupAdapter()
                     else
                         throw Exception("Não foi possível concluir a requisição")
-                    mBinding.textViewNomeDoLocal.text = lAddres.address.city + " " + lAddres.address.state + " " + lAddres.address.country
+                    mBinding.textViewNomeDoLocal.text = lAddress.address.city + " " + lAddress.address.state + " " + lAddress.address.country
                 }
 
             } catch (e: Exception) {
@@ -98,7 +108,7 @@ class MainActivity : AppCompatActivity() {
 
 
     }
-
+  // Para verificar se ter permissão de localização e se não tiver vai solicitar
     fun haveLocation() {
         val lPermission = mutableListOf<String>()
 
@@ -115,17 +125,16 @@ class MainActivity : AppCompatActivity() {
 
         } else {
             val lClient = LocationServices.getFusedLocationProviderClient(this)
-            lClient.lastLocation.addOnSuccessListener { location: Location? ->
+            lClient.lastLocation.addOnSuccessListener { location: Location? -> // busca lat e long pega pelo usuario pela ultima vez
                 mLatitude = location?.latitude.toString()
                 mLongitude = location?.longitude.toString()
 
-                Toast.makeText(this, "$mLatitude $mLongitude", Toast.LENGTH_SHORT).show()
                 getListPrevisao()
 
             }
         }
 
-
+       //Busca da lat e long mais dificil
 //            val lLocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
 //            val lLocation =
 //                lLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
@@ -139,7 +148,7 @@ class MainActivity : AppCompatActivity() {
 //        }
 
     }
-
+     // utilizada para setar todas as variaveis do cache nas variaveis globais, para começar o app direto com as informacoes já salva no cache, para que não seja realizada a requisicao de novo
      fun setInformationCache(){
          mBinding.textViewNomeDoLocal.text = mStoreClima.objeticLocationDTO.address.city + " " + mStoreClima.objeticLocationDTO.address.state + " " + mStoreClima.objeticLocationDTO.address.country
          mListTemperature = mStoreClima.listDetalhesDTO.hourly.temperature_2m
@@ -148,6 +157,17 @@ class MainActivity : AppCompatActivity() {
 
          setupAdapter()
      }
+
+    fun clickTextRefresh(){
+        mBinding.textViewNomeDoLocal.setOnClickListener {
+            mListTemperature = emptyList()
+            mListPrecipitation = emptyList()
+            mListTimeDTO = emptyList()
+            setupAdapter()
+            haveLocation()
+
+        }
+    }
 
 
 }

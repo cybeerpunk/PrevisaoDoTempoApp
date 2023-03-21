@@ -22,6 +22,8 @@ class ListPrevisaoRepository (val context: Context) {
         return  response.body()!!
     }*/
 
+
+    // onde realiza a requisicao, intermediando a activity ou o fragment da interface
     fun getValueWithLocation(aLatitude: String, aLongitude: String): ListDetalhesDTO {
         val response = PrevisaoREST()
             .getValueWithLocation(aLatitude, aLongitude)
@@ -41,11 +43,18 @@ class ListPrevisaoRepository (val context: Context) {
         return  response.body()!!
 
     }
-
+     // adicionar as coisas no cache
     fun storeClima(storeClimaDTO: StoreClimaDTO){
         CoroutineScope(Dispatchers.IO).launch {
             AddressPreference(context).store(storeClimaDTO)
         }
 
+
+    }
+   // limpar o cache
+    fun clearData(){
+        CoroutineScope(Dispatchers.IO).launch {
+            AddressPreference(context).clearData()
+        }
     }
 }

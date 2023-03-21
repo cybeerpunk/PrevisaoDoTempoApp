@@ -6,6 +6,8 @@ import retrofit2.Call
 
 class PrevisaoREST : BaseREST<IPrevisaoREST>(IPrevisaoREST::class.java){
 
+
+    //utilizado para decidir o service e base url na requisicao
     fun getValuePrevisao(): Call<ListDetalhesDTO> {
         return service.getValuePrevisao()
     }

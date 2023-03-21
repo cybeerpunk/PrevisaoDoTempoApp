@@ -17,6 +17,6 @@ class ScreenSlidePagerAdapter (fm: FragmentManager?, lf: Lifecycle?) :
     }
 
     fun addFragment(fragment: Fragment) {
-        mFragmentList.add(fragment)
+        mFragmentList.add(fragment) // utilizado para adicionar a lista de fragment na activity
     }
 }

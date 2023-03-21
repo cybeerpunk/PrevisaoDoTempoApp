@@ -12,6 +12,8 @@ abstract public class BaseREST<T> {
 
     protected Retrofit retrofit;
 
+
+    // base utilizada para iniciar as requisiçoes, é a base do Retrofit.
     protected BaseREST(Class<T> classType) {
         this.retrofit = PrevisaoHTTP.create();
         this.service = retrofit.create(classType);

@@ -8,6 +8,8 @@ import com.google.gson.Gson
 class AddressPreference (mContext: Context){
     private var mSharedPreference: SharedPreferences? = null
 
+    //padrão para criar um SharedPreferences
+
     companion object{
         const val PREFERENCE_KEY = "app-previsao-do-tempo-shared-preferences"
         const val CONFIG_INDEX = "previsao-do-tempo"

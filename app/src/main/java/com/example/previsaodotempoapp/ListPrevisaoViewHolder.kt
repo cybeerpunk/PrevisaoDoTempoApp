@@ -13,6 +13,8 @@ class ListPrevisaoViewHolder(
     val mContext: Context
 ) : RecyclerView.ViewHolder(mBinding.root) {
 
+
+    // setar as informacoes do argumento, e foi realizado as validacoes para decidir qual icone vai ser setado
     fun fill(aListTimeDTO: String, aListTemperature: Double, aListPrecipitation: Double) {
         val lFormatDate = LocalDateTime.parse(aListTimeDTO, DateTimeFormatter.ISO_DATE_TIME)
 

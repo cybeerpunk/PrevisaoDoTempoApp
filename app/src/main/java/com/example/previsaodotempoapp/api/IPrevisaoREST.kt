@@ -8,6 +8,7 @@ import retrofit2.http.Query
 
 interface IPrevisaoREST {
 
+    //coloca as url's de requisição
     @GET("https://api.open-meteo.com/v1/forecast?latitude=-26.23&longitude=-51.09&hourly=temperature_2m,precipitation")
     fun getValuePrevisao(
     ): Call<ListDetalhesDTO>

@@ -1,7 +1,9 @@
 package com.example.previsaodotempoapp
 
+import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location
+import android.location.LocationManager
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Toast
@@ -38,17 +40,18 @@ class MainActivity : AppCompatActivity() {
         mStoreClima = AddressPreference(this).get()
 
         clickTextRefresh()
+        clickPutPost()
 
-        if(mStoreClima.listDetalhesDTO.latitude != null && mStoreClima.objeticLocationDTO.address.city!= "") {
+        if (mStoreClima.listDetalhesDTO.latitude != null && mStoreClima.objeticLocationDTO.address.city != "") {
             setInformationCache()
         } else {
             haveLocation()
         }
 
 
-
     }
-       //Função utilizada para pegar o resultado da pergunta de permissão do usuário
+
+    //Função utilizada para pegar o resultado da pergunta de permissão do usuário
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
@@ -66,7 +69,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-     //Utilizado para setar as informações do RecyclerView
+    //Utilizado para setar as informações do RecyclerView
     fun setupAdapter() {
         mAdapter = ListPrevisaoAdapter(this, mListTimeDTO, mListTemperature, mListPrecipitation)
         mBinding.recyclerViewHours.adapter = mAdapter
@@ -80,8 +83,14 @@ class MainActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 /*val lRepository = ListPrevisaoRepository().getValuePrevisao()*/
-                val lRepository = ListPrevisaoRepository(this@MainActivity).getValueWithLocation(mLatitude, mLongitude)
-                val lAddress = ListPrevisaoRepository(this@MainActivity).getNameOfLocation(mLatitude,mLongitude)
+                val lRepository = ListPrevisaoRepository(this@MainActivity).getValueWithLocation(
+                    mLatitude,
+                    mLongitude
+                )
+                val lAddress = ListPrevisaoRepository(this@MainActivity).getNameOfLocation(
+                    mLatitude,
+                    mLongitude
+                )
                 mStoreClima.listDetalhesDTO = lRepository
                 mStoreClima.objeticLocationDTO = lAddress
 
@@ -96,19 +105,22 @@ class MainActivity : AppCompatActivity() {
                         setupAdapter()
                     else
                         throw Exception("Não foi possível concluir a requisição")
-                    mBinding.textViewNomeDoLocal.text = lAddress.address.city + " " + lAddress.address.state + " " + lAddress.address.country
+                    mBinding.textViewNomeDoLocal.text =
+                        lAddress.address.city + " " + lAddress.address.state + " " + lAddress.address.country
                 }
 
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@MainActivity, e.message.toString(), Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, e.message.toString(), Toast.LENGTH_SHORT)
+                        .show()
                 }
             }
         }
 
 
     }
-  // Para verificar se ter permissão de localização e se não tiver vai solicitar
+
+    // Para verificar se ter permissão de localização e se não tiver vai solicitar
     fun haveLocation() {
         val lPermission = mutableListOf<String>()
 
@@ -124,47 +136,71 @@ class MainActivity : AppCompatActivity() {
             ActivityCompat.requestPermissions(this, lPermission.toTypedArray(), 1)
 
         } else {
-            val lClient = LocationServices.getFusedLocationProviderClient(this)
+
+            //Busca da lat e long mais dificil
+            val lLocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+           val lLocation = lLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+
+           if (lLocation != null) {
+               mLatitude = lLocation.latitude.toString()
+               mLongitude = lLocation.longitude.toString()
+               getListPrevisao()
+            }
+        }
+
+          // função que pega só uma localização
+/*          val lClient = LocationServices.getFusedLocationProviderClient(this)
             lClient.lastLocation.addOnSuccessListener { location: Location? -> // busca lat e long pega pelo usuario pela ultima vez
                 mLatitude = location?.latitude.toString()
                 mLongitude = location?.longitude.toString()
 
-                getListPrevisao()
-
-            }
-        }
-
-       //Busca da lat e long mais dificil
-//            val lLocationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-//            val lLocation =
-//                lLocationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-//
-//            if (lLocation != null) {
-//                mLatitude = lLocation.latitude.toString()
-//                mLongitude = lLocation.longitude.toString()
-//                getListPrevisao()
+                getListPrevisao()*/
 //
 //            }
 //        }
 
     }
-     // utilizada para setar todas as variaveis do cache nas variaveis globais, para começar o app direto com as informacoes já salva no cache, para que não seja realizada a requisicao de novo
-     fun setInformationCache(){
-         mBinding.textViewNomeDoLocal.text = mStoreClima.objeticLocationDTO.address.city + " " + mStoreClima.objeticLocationDTO.address.state + " " + mStoreClima.objeticLocationDTO.address.country
-         mListTemperature = mStoreClima.listDetalhesDTO.hourly.temperature_2m
-         mListPrecipitation = mStoreClima.listDetalhesDTO.hourly.precipitation
-         mListTimeDTO = mStoreClima.listDetalhesDTO.hourly.time
 
-         setupAdapter()
-     }
+    // utilizada para setar todas as variaveis do cache nas variaveis globais, para começar o app direto com as informacoes já salva no cache, para que não seja realizada a requisicao de novo
+    fun setInformationCache() {
+        mBinding.textViewNomeDoLocal.text =
+            mStoreClima.objeticLocationDTO.address.city + " " + mStoreClima.objeticLocationDTO.address.state + " " + mStoreClima.objeticLocationDTO.address.country
+        mListTemperature = mStoreClima.listDetalhesDTO.hourly.temperature_2m
+        mListPrecipitation = mStoreClima.listDetalhesDTO.hourly.precipitation
+        mListTimeDTO = mStoreClima.listDetalhesDTO.hourly.time
 
-    fun clickTextRefresh(){
+        setupAdapter()
+    }
+
+    fun clickTextRefresh() {
         mBinding.textViewNomeDoLocal.setOnClickListener {
             mListTemperature = emptyList()
             mListPrecipitation = emptyList()
             mListTimeDTO = emptyList()
             setupAdapter()
             haveLocation()
+
+        }
+    }
+
+    fun clickPutPost() {
+        mBinding.buttonPost.setOnClickListener {
+            CoroutineScope(Dispatchers.IO).launch {
+                val lPost = ListPrevisaoRepository(this@MainActivity).postTodos()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@MainActivity, lPost.id.toString(), Toast.LENGTH_SHORT)
+                        .show()
+                }
+            }
+        }
+
+        mBinding.buttonPut.setOnClickListener {
+            CoroutineScope(Dispatchers.IO).launch {
+                val lPut = ListPrevisaoRepository(this@MainActivity).putTodos()
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@MainActivity, lPut.id.toString(), Toast.LENGTH_SHORT).show()
+                }
+            }
 
         }
     }

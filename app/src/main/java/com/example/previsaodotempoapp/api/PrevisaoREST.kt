@@ -2,6 +2,7 @@ package com.example.previsaodotempoapp.api
 
 import com.example.previsaodotempoapp.dto.ListDetalhesDTO
 import com.example.previsaodotempoapp.dto.ObjeticLocationDTO
+import com.example.previsaodotempoapp.dto.ReturnPostDTO
 import retrofit2.Call
 
 class PrevisaoREST : BaseREST<IPrevisaoREST>(IPrevisaoREST::class.java){
@@ -18,6 +19,14 @@ class PrevisaoREST : BaseREST<IPrevisaoREST>(IPrevisaoREST::class.java){
 
     fun getNameOfLocation(lat: String, long: String): Call<ObjeticLocationDTO> {
         return service.getNameOfLocation(lat, long, "json")
+    }
+
+    fun postTodos(): Call<ReturnPostDTO>{
+        return service.postTodos()
+    }
+
+    fun putTodos(): Call<ReturnPostDTO>{
+        return service.putTodos()
     }
 
 }

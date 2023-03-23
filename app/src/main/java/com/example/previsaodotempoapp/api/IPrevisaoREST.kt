@@ -2,8 +2,11 @@ package com.example.previsaodotempoapp.api
 
 import com.example.previsaodotempoapp.dto.ListDetalhesDTO
 import com.example.previsaodotempoapp.dto.ObjeticLocationDTO
+import com.example.previsaodotempoapp.dto.ReturnPostDTO
 import retrofit2.Call
 import retrofit2.http.GET
+import retrofit2.http.POST
+import retrofit2.http.PUT
 import retrofit2.http.Query
 
 interface IPrevisaoREST {
@@ -25,4 +28,11 @@ interface IPrevisaoREST {
         @Query("lon") lon: String,
         @Query("format") format: String
     ): Call<ObjeticLocationDTO>
+
+    @POST("https://jsonplaceholder.typicode.com/todos/")
+    fun postTodos(): Call<ReturnPostDTO>
+
+    @PUT ("https://jsonplaceholder.typicode.com/posts/1")
+    fun putTodos(): Call<ReturnPostDTO>
+
 }

@@ -3,6 +3,7 @@ package com.example.previsaodotempoapp.api
 import android.content.Context
 import com.example.previsaodotempoapp.dto.ListDetalhesDTO
 import com.example.previsaodotempoapp.dto.ObjeticLocationDTO
+import com.example.previsaodotempoapp.dto.ReturnPostDTO
 import com.example.previsaodotempoapp.dto.StoreClimaDTO
 import com.example.previsaodotempoapp.exception.PrevisaoException
 import com.example.previsaodotempoapp.store.AddressPreference
@@ -37,6 +38,25 @@ class ListPrevisaoRepository (val context: Context) {
     fun getNameOfLocation(aLat: String, aLong: String): ObjeticLocationDTO {
         val response = PrevisaoREST()
             .getNameOfLocation(aLat, aLong)
+            .execute()
+        if (response.code() != 200 && response.code() != 201)
+            throw PrevisaoException.fromHTTPErrorBody(response.errorBody())
+        return  response.body()!!
+
+    }
+
+    fun postTodos(): ReturnPostDTO {
+        val response = PrevisaoREST()
+            .postTodos()
+            .execute()
+        if (response.code() != 200 && response.code() != 201)
+            throw PrevisaoException.fromHTTPErrorBody(response.errorBody())
+        return  response.body()!!
+    }
+
+    fun putTodos(): ReturnPostDTO {
+        val response = PrevisaoREST()
+            .putTodos()
             .execute()
         if (response.code() != 200 && response.code() != 201)
             throw PrevisaoException.fromHTTPErrorBody(response.errorBody())
